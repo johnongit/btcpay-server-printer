@@ -1,0 +1,9 @@
+{
+    "btcpay_server_url": "https://<btcpay url>",
+    "btcpay_server_api_key": "",
+    "btcpay_server_webhook_secret": "",
+    "wifi_ssid": "",
+    "wifi_psk": ""
+}
+
+
