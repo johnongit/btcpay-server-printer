@@ -1,0 +1,27 @@
+<html>
+  <head>
+    <title>Configuration</title>
+  </head>
+  <body>
+    <h1>Configuration</h1>
+    <form method="post" action="/config" enctype="application/json">
+      <label>Wi-Fi network SSID:</label>
+      <input type="text" name="wifi_ssid" required>
+      <br>
+      <label>Wi-Fi network password:</label>
+      <input type="password" name="wifi_password" required>
+      <br>
+      <label>URL:</label>
+      <input type="text" name="url" required>
+      <br>
+      <label>API key:</label>
+      <input type="text" name="api_key" required>
+      <br>
+      <label>Webhook secret:</label>
+      <input type="text" name="webhook_secret" required>
+      <br>
+      <input type="submit" value="Submit">
+    </form>
+  </body>
+</html>
+
