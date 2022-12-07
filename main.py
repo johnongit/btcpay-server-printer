@@ -243,25 +243,39 @@ def index(request):
         return "Canno Parse request"
     
 ##########################
-    
+
+# Wifi connection
 def do_connect():
+    # Get WiFi interface and credentials
+    wlan_sta = network.WLAN(network.STA_IF)
+    ssid = params['wifi_ssid']
+    password = params['wifi_psk']
+    
+    # Activate WiFi interface and check if already connected
     wlan_sta.active(True)
-    #wlan_sta.config(hostname='print')
     if wlan_sta.isconnected():
         led.value(1)
         return None
+    
+    # Print message and attempt to connect to WiFi network
     print('Trying to connect to %s...' % ssid)
     wlan_sta.connect(ssid, password)
+    
     for retry in range(100):
+        # Check if WiFi is connected
         connected = wlan_sta.isconnected()
         if connected:
             led.value(1)
             break
+            
+        # Blink LED to indicate ongoing connection attempt
         led.value(1)
         time.sleep(1)
         led.value(0)
         time.sleep(1)
         print('.', end='')
+    
+    # Print success or failure message and return result
     if connected:
         print('\nConnected. Network config: ', wlan_sta.ifconfig())
     else:
@@ -274,15 +288,17 @@ def do_connect():
     return connected
 
 
+# Used to configure esp as an access point (used for configuration mode)
 def create_AP():
-    # Définissez les paramètres du point d'accès
-    print("in create_AP")
+    # Get WiFi access point interface
     ap_if = network.WLAN(network.AP_IF)
     ap_if.active(True)
-    #ap_if.config(essid="printer", authmode=network.AUTH_WPA_WPA2_PSK, password="azertyuiop")
-    ap_if.config(essid='micropython',password=b"micropython",channel=11,authmode=network.AUTH_WPA_WPA2_PSK)  #Set up an access point
-    return ap_if.ifconfig()
 
+    # Set up access point with specified parameters
+    ap_if.config(essid='micropython', password=b"micropython", channel=11, authmode=network.AUTH_WPA_WPA2_PSK)
+    
+    # Return access point configuration
+    return ap_if.ifconfig()
 
 
 
