@@ -215,6 +215,7 @@ async def index(request):
     with open('params.json', 'w') as outfile:
         json.dump(config, outfile)
     print(config)
+    return "OK"
 
 # Create route that accept POST method
 @app.route('/',methods=['POST'])
@@ -356,6 +357,7 @@ async def main():
 
 boot_button1.irq(trigger=machine.Pin.IRQ_FALLING, handler=handle_button_fall)
 uasyncio.run(main())
+
 
 
 
