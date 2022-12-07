@@ -135,26 +135,30 @@ def date():
 
 # Get Invoice from btcpay server api
 def get_invoice(storeId, invoiceId):
-    # API call that get order from btcpay server
-    retries = 0
-    while retries < 5:
+    # API call that gets order from btcpay server
+
+    # Retry up to 5 times if the API call fails
+    for retries in range(5):
         try:
+            # Authenticate with the btcpay server using an API key
             auth   = MicroWebCli.AuthToken(apiKey)
-            print("in retry")
+
+            # Create a new web client and make a GET request to the specified URL
             wCli = MicroWebCli(BTCPAY_INSTANCE + "/api/v1/stores/" + storeId + "/invoices/" + invoiceId, 'GET', auth)
-            print('GET %s' % wCli.URL)
             wCli.OpenRequest()
-            print("after openRequest")
+
+            # Get the response from the server and check if it was successful
             resp = wCli.GetResponse()
-            print("after response")
             if resp.IsSuccess():
+                # If the response was successful, exit the loop
                 break
         except Exception as e:
-            retries += 1
-            if retries == 5:
+            # If an exception occurred and this is the last retry, raise the exception
+            if retries == 4:
                 raise e
             else:
-                print("Cannot connect to btcpay server... try " + str(retries) + "/5")
+                # Otherwise, print a message and wait 5 seconds before retrying
+                print("Cannot connect to btcpay server... try " + str(retries + 1) + "/5")
                 time.sleep(5)
 
     if not resp.IsSuccess():
