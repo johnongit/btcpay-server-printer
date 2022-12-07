@@ -1,0 +1,29 @@
+{% args params %}
+<html>
+  <head>
+    <title>Configuration</title>
+  </head>
+  <body>
+    <h1>Configuration</h1>
+    <form method="post" action="/config" enctype="application/json">
+      <label>Wi-Fi network SSID:</label>
+      <input type="text" name="wifi_ssid" required value={{ params['wifi_ssid'] }}>
+      <br>
+      <label>Wi-Fi network password:</label>
+      <input type="text" name="wifi_password" required value={{ params['wifi_psk'] }}>
+      <br>
+      <label>Btcpay server URL:</label>
+      <input type="text" name="url" required value={{ params['btcpay_server_url'] }}>
+      <br>
+      <label>Btcpaye user API key:</label>
+      <input type="text" name="api_key" required value={{ params['btcpay_server_api_key'] }}>
+      <br>
+      <label>Btcpay webhook secret:</label>
+      <input type="text" name="webhook_secret" required value={{ params['btcpay_server_webhook_secret'] }}>
+      <br>
+      <input type="submit" value="Submit">
+    </form>
+  </body>
+</html>
+
+
