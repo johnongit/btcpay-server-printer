@@ -123,24 +123,14 @@ def handle_button_rise(change):
 
 # Used to render date time for printer
 def date():
+    # Get the current time including the timezone offset
     timestamp = time.localtime(time.time() + UTC_OFFSET)
-    if timestamp[3] < 10:
-        hour = '0' + str(timestamp[3])
-    else:
-        hour = str(timestamp[3])
-    if timestamp[4] < 10:
-        minute = '0' + str(timestamp[4])
-    else:
-        minute = str(timestamp[4])
-    if timestamp[5] < 10:
-        second = '0' + str(timestamp[5])
-    else:
-        second = str(timestamp[5])
-    date = hour +':' + minute +':' + second
-    print(date)
-    return str(date)
-
-
+    # Format the hour, minute, and second as two-digit strings
+    hour = str(timestamp[3]).zfill(2)
+    minute = str(timestamp[4]).zfill(2)
+    second = str(timestamp[5]).zfill(2)
+    # Return the formatted date and time string
+    return hour + ':' + minute + ':' + second
 
 
 # Get Invoice from btcpay server api
