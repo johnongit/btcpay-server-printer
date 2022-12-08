@@ -1,17 +1,24 @@
-from Adafruit_Thermal import *
-from machine import Pin
-import machine
-import time
 import network
+import gc
+import micropython
+import machine
+from machine import Pin
+from Adafruit_Thermal import *
+#from machine import Pin
+import time
 import uasyncio
-from microdot_asyncio import Microdot, send_file, Response
+from microdot_asyncio import Microdot, send_file
 from microdot_utemplate import render_template
 import hashlib
 import hmac
 import json
 import ntptime
-import micropython
-micropython.mem_info(1)
+#micropython.mem_info(1)
+gc.collect()
+gc.threshold(gc.mem_free() // 4 + gc.mem_alloc())
+from microWebCli import MicroWebCli
+gc.collect()
+gc.threshold(gc.mem_free() // 4 + gc.mem_alloc())
 
 
 # Initialize Microdot server
@@ -123,8 +130,9 @@ def date():
 # Get Invoice from btcpay server api
 def get_invoice(storeId, invoiceId):
     # API call that gets order from btcpay server
-    from microWebCli import MicroWebCli
-
+    
+    gc.collect()
+    gc.threshold(gc.mem_free() // 4 + gc.mem_alloc())
     # Retry up to 5 times if the API call fails
     for retries in range(5):
         try:
@@ -137,6 +145,8 @@ def get_invoice(storeId, invoiceId):
 
             # Get the response from the server and check if it was successful
             resp = wCli.GetResponse()
+            print(str(resp.GetStatusCode()))
+            print(str(resp.GetStatusMessage()))
             if resp.IsSuccess():
                 # If the response was successful, exit the loop
                 break
@@ -147,6 +157,7 @@ def get_invoice(storeId, invoiceId):
             else:
                 # Otherwise, print a message and wait 5 seconds before retrying
                 print("Cannot connect to btcpay server... try " + str(retries + 1) + "/5")
+                print(e)
                 time.sleep(5)
 
     if not resp.IsSuccess():
@@ -187,7 +198,6 @@ def get_invoice(storeId, invoiceId):
 async def index1(request):
     global params
     if config_mode:
-        Response.default_content_type = 'text/html'
         return render_template('config.html', params=params)
     return ""
 
@@ -361,4 +371,3 @@ uasyncio.run(main())
 
 
 
-z
