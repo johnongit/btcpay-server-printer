@@ -7,7 +7,7 @@ from Adafruit_Thermal import *
 #from machine import Pin
 import time
 import uasyncio
-from microdot_asyncio import Microdot, send_file
+from microdot_asyncio import Microdot, send_file, Response
 from microdot_utemplate import render_template
 import hashlib
 import hmac
@@ -198,6 +198,7 @@ def get_invoice(storeId, invoiceId):
 async def index1(request):
     global params
     if config_mode:
+        Response.default_content_type = 'text/html'
         return render_template('config.html', params=params)
     return ""
 
@@ -368,6 +369,4 @@ async def main():
 
 boot_button1.irq(trigger=machine.Pin.IRQ_FALLING, handler=handle_button_fall)
 uasyncio.run(main())
-
-
 
