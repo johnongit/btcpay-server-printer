@@ -307,7 +307,7 @@ def create_AP():
     ap_if.active(True)
 
     # Set up access point with specified parameters
-    ap_if.config(essid='micropython', password=b"dkzaopdeazefhu", channel=11, authmode=network.AUTH_WPA_WPA2_PSK)
+    ap_if.config(essid='micropython', password=b"btcpay4ever", channel=11, authmode=network.AUTH_WPA_WPA2_PSK)
     
     # Return access point configuration
     return ap_if.ifconfig()
