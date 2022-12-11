@@ -36,6 +36,7 @@ ampy --port /dev/ttyUSB0 put templates/config.html /templates/config.html
 
 Import the following library with Thonny IDE
 * microdot
+* utemplate
 
 ## Physical Connection
 The connection between the board and the thermal printer use UART2 (labelled as tx2 on the board) and ground (labelled as GND)
