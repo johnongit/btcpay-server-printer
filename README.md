@@ -26,16 +26,16 @@ Clone the repository and install all python files with ampy
 git clone https://github.com/johnongit/btcpay-server-printer.git
 ampy --port /dev/ttyUSB0 put main.py
 ampy --port /dev/ttyUSB0 put params.json
-ampy --port /dev/ttyUSB0 put btcpay.py
-ampy --port /dev/ttyUSB0 put thermal_printer.py
+ampy --port /dev/ttyUSB0 put Adafruit_Thermal.py
 ampy --port /dev/ttyUSB0 put hmac.py
-ampy --port /dev/ttyUSB0 put micoWebCli.py
+ampy --port /dev/ttyUSB0 put microWebCli.py
 ampy --port /dev/ttyUSB0 mkdir /templates
 ampy --port /dev/ttyUSB0 put templates/config.html /templates/config.html
 ```
 
 Import the following library with Thonny IDE
 * microdot
+* microdot-asyncio
 * utemplate
 
 ## Physical Connection
