@@ -181,13 +181,13 @@ def get_invoice(storeId, invoiceId):
         printer.justify('L')
         printer.feed(1)
         printer.boldOn()
-        printer.println('Cmd ' + orderId)
+        printer.println(orderId)
         printer.boldOff()
         printer.feed(1)
         for item in posData['cart']:
             #Printe item
-            print(item['title']+ " x" + str(item['count']))
-            printer.println(item['title'] + " x" + str(item['count']))
+            print("x" + str(item['count']) + " " + item['title'])
+            printer.println("x" + str(item['count']) + " " + item['title'])
             printer.println("")
         printer.feed(2)
 
@@ -369,4 +369,5 @@ async def main():
 
 boot_button1.irq(trigger=machine.Pin.IRQ_FALLING, handler=handle_button_fall)
 uasyncio.run(main())
+
 
