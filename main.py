@@ -7,6 +7,8 @@ from Adafruit_Thermal import *
 #from machine import Pin
 import time
 import uasyncio
+gc.collect()
+gc.threshold(gc.mem_free() // 4 + gc.mem_alloc())
 from microdot_asyncio import Microdot, send_file, Response
 from microdot_utemplate import render_template
 import hashlib
@@ -19,8 +21,8 @@ gc.threshold(gc.mem_free() // 4 + gc.mem_alloc())
 from microWebCli import MicroWebCli
 gc.collect()
 gc.threshold(gc.mem_free() // 4 + gc.mem_alloc())
-
-
+import webrepl
+webrepl.start()
 # Initialize Microdot server
 app = Microdot()
 
@@ -101,7 +103,16 @@ def handle_button_rise(change):
     boot_button1.irq(trigger=machine.Pin.IRQ_FALLING, handler=handle_button_fall)
   
 
-
+################################
+    
+# Used by printer to simplify payment hash and txid (because long strings are not printed properly)
+def aggregate_chars(string):
+    # Get the first four characters of the string
+    first_four = string[:4]
+    # Get the last four characters of the string
+    last_four = string[-4:]
+    # Return the first four characters, followed by a dash, followed by the last four characters
+    return f"{first_four}...{last_four}"
 
   
 ################################################
@@ -133,21 +144,30 @@ def get_invoice(storeId, invoiceId):
     
     gc.collect()
     gc.threshold(gc.mem_free() // 4 + gc.mem_alloc())
+
+
     # Retry up to 5 times if the API call fails
     for retries in range(5):
         try:
             # Authenticate with the btcpay server using an API key
             auth   = MicroWebCli.AuthToken(apiKey)
+            
+            # Get Invoices endpoint to fetch order details
+            wCli_invoice = MicroWebCli(BTCPAY_INSTANCE + "/api/v1/stores/" + storeId + "/invoices/" + invoiceId, 'GET', auth)
+            wCli_invoice.OpenRequest()
+            # Get the response_invoice_JSON from the server and check if it was successful
+            resp_invoice = wCli_invoice.GetResponse()
+            response_invoice_JSON = resp_invoice.ReadContentAsJSON() 
+            wCli_invoice.Close()
+            
+            # Get payment pethods to fetch preiamge
+            wCli_method = MicroWebCli(BTCPAY_INSTANCE + "/api/v1/stores/" + storeId + "/invoices/" + invoiceId + '/payment-methods','GET', auth)
+            wCli_method.OpenRequest()
+            resp_method = wCli_method.GetResponse()
+            response_method_JSON = resp_method.ReadContentAsJSON()
+            wCli_method.Close()
 
-            # Create a new web client and make a GET request to the specified URL
-            wCli = MicroWebCli(BTCPAY_INSTANCE + "/api/v1/stores/" + storeId + "/invoices/" + invoiceId, 'GET', auth)
-            wCli.OpenRequest()
-
-            # Get the response from the server and check if it was successful
-            resp = wCli.GetResponse()
-            print(str(resp.GetStatusCode()))
-            print(str(resp.GetStatusMessage()))
-            if resp.IsSuccess():
+            if resp_invoice.IsSuccess() and resp_method.IsSuccess():
                 # If the response was successful, exit the loop
                 break
         except Exception as e:
@@ -158,37 +178,67 @@ def get_invoice(storeId, invoiceId):
                 # Otherwise, print a message and wait 5 seconds before retrying
                 print("Cannot connect to btcpay server... try " + str(retries + 1) + "/5")
                 print(e)
+                gc.collect()
+                gc.threshold(gc.mem_free() // 4 + gc.mem_alloc())
                 time.sleep(5)
 
-    if not resp.IsSuccess():
+    if not resp_invoice.IsSuccess() or not resp_method.IsSuccess() :
         print("Cannot connect to btcpay server api")
     else:
-        response = resp.ReadContentAsJSON()
-        print(response)
-        orderId = response['metadata']['orderId']
-        receipt = response['checkoutLink'] + '/receipt'
-        posData = json.loads(response['metadata']["posData"])
+
+        #response_invoice_JSON = resp_invoice.ReadContentAsJSON()
+        orderId = response_invoice_JSON['metadata']['orderId']
+        receipt = response_invoice_JSON['checkoutLink'] + '/receipt'
+        posData = json.loads(response_invoice_JSON['metadata']["posData"])
         
+        print("json")
+        print(response_method_JSON)
+        #response_method_JSON = resp_method.ReadContentAsJSON()
+        for paymentMethod_element in response_method_JSON:
+            
+            paymentMethod = ""
+            destination = ""
+            if paymentMethod_element['activated']:
+                paymentMethod = paymentMethod_element['paymentMethod']                              
+                break
+        
+        if paymentMethod=='BTC-LightningNetwork' or paymentMethod=='BTC-LNURLPAY':
+            paymentMethod = "Lightning"
+            idLabel = 'Payment Hash'
+            paymentId = paymentMethod_element['additionalData']['preimage']
+        else:
+            paymentMethod = 'on chain'
+            idLabel = 'Tx ID'
+            paymentId = paymentMethod_element['payments'][0]['id']
+        paymentIdToPrint = aggregate_chars(paymentId)
         # Print order
-        print('Commande: ' + orderId)
+        print('Payment Method: ' + paymentMethod)
+        print(idLabel + ': ' + paymentId)
+        
         printer.feed(3)
-        #Print date center large
-        printer.justify('C')
-        printer.setSize('L')
-        printer.println(date())
-        #Printe orderID small left
-        printer.setSize('s')
+        #Print date 
         printer.justify('L')
+        printer.setSize('s')
+        printer.println(date())
+        #Printe payment method
         printer.feed(1)
         printer.boldOn()
-        printer.println(orderId)
+        printer.println('Payment Method:')
         printer.boldOff()
+        printer.println(paymentMethod)
+        printer.boldOn()
+        printer.println(idLabel + ': ')
+        printer.boldOff()
+        printer.println(paymentIdToPrint)
         printer.feed(1)
+        # Print order details
         for item in posData['cart']:
             #Printe item
+            printer.setSize('M')
             print("x" + str(item['count']) + " " + item['title'])
             printer.println("x" + str(item['count']) + " " + item['title'])
-            printer.println("")
+        printer.println("")
+        printer.setSize('S')
         printer.feed(2)
 
 ##########################
@@ -369,5 +419,7 @@ async def main():
 
 boot_button1.irq(trigger=machine.Pin.IRQ_FALLING, handler=handle_button_fall)
 uasyncio.run(main())
+
+
 
 
