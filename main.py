@@ -204,7 +204,7 @@ def get_invoice(storeId, invoiceId):
         
         if paymentMethod=='BTC-LightningNetwork' or paymentMethod=='BTC-LNURLPAY':
             paymentMethod = "Lightning"
-            idLabel = 'Payment Hash'
+            idLabel = 'Preimage'
             paymentId = paymentMethod_element['additionalData']['preimage']
         else:
             paymentMethod = 'on chain'
